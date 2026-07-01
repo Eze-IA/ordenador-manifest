@@ -3,7 +3,7 @@ import os
 
 st.set_page_config(page_title="Manifesto - Ordenador Universal de Texto -", page_icon="📝")
 
-st.title("📝 Manifesto - Ordenador Universal Inteligente")
+st.title("📝 Manifesto -                     Ordenador Universal Inteligente")
 st.write("Sube cualquier archivo de texto y ordénalo copiando y pegando una plantilla de guía.")
 
 # 1. Entrada de la plantilla guía
