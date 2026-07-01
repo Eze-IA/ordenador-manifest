@@ -1,7 +1,7 @@
 import streamlit as st
 import os
 
-st.set_page_config(page_title="Ordenador Universal de Texto", page_icon="📝")
+st.set_page_config(page_title="Manifesto - Ordenador Universal de Texto -", page_icon="📝")
 
 st.title("📝 Ordenador Universal Inteligente")
 st.write("Sube cualquier archivo de texto y ordénalo copiando y pegando una plantilla de guía.")
