@@ -1,6 +1,6 @@
 import streamlit as st
 
-# 1. CONFIGURACIÓN DE PÁGINA (Limpia y sin barra lateral)
+# 1. CONFIGURACIÓN DE PÁGINA
 st.set_page_config(
     page_title="Manifest: Intelligent File Sorter", 
     page_icon="📝",
@@ -58,7 +58,7 @@ st.markdown('<p class="slogan">The smart way to organize deployment files.</p>',
 
 st.write("**Organiza automáticamente archivos de despliegue y manifests de bases de datos en segundos.**")
 
-# Características destacadas (Grid visual corto)
+# Características destacadas (Grid visual)
 col1, col2 = st.columns(2)
 with col1:
     st.markdown('<div class="feature-box">🧠 <b>Ordenamiento inteligente</b> basado en guías de referencia.</div>', unsafe_allow_html=True)
@@ -69,8 +69,7 @@ with col2:
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# --- BOTÓN DESPLEGABLE NATIVO (DOCUMENTACIÓN COMPLETA) ---
-# Se presenta cerrado por defecto para no robar espacio de trabajo
+# --- BOTÓN DESPLEGABLE NATIVO (DOCUMENTACIÓN) ---
 with st.expander("📖 Conoce más sobre Manifest (Problema que resuelve e Impacto DevOps)"):
     st.markdown("""
     ### 💻 ¿Para quién es?
@@ -80,7 +79,6 @@ with st.expander("📖 Conoce más sobre Manifest (Problema que resuelve e Impac
     Evita tareas repetitivas y catastróficas al preparar despliegues complejos. Olvídate de errores humanos en producción como:
     - *'La tabla se creó después del índice.'*
     - *'La foreign key apunta a una tabla que todavía no existe.'*
-    - *'El script falló por ejecutarse en el orden incorrecto.'*
     
     ### 🚀 Ideal para secuenciar dependencias en:
     - **Bases de datos:** Oracle, SQL Server, PostgreSQL, MySQL.
@@ -90,35 +88,85 @@ with st.expander("📖 Conoce más sobre Manifest (Problema que resuelve e Impac
 
 st.write("---")
 
+# --- VARIABLES PARA LA SIMULACIÓN ---
+ejemplo_molde = (
+    "..\\database\\schema\\01_tables.sql\n"
+    "..\\database\\schema\\02_indexes.sql\n"
+    "..\\database\\schema\\03_foreign_keys.sql\n"
+    "..\\database\\data\\04_initial_seed.sql"
+)
+
+ejemplo_archivo = (
+    "..\\all_scripts\\03_foreign_keys.sql\n"
+    "..\\all_scripts\\01_tables.sql\n"
+    "..\\all_scripts\\01_tables_rev.sql\n"
+    "..\\all_scripts\\04_initial_seed.sql\n"
+    "..\\all_scripts\\02_indexes.sql"
+)
+
+# Inicializar estados en el almacenamiento de sesión de Streamlit si no existen
+if "molde_val" not in st.session_state:
+    st.session_state.molde_val = ""
+if "archivo_val" not in st.session_state:
+    st.session_state.archivo_val = ""
+if "mostrar_resultado_demo" not in st.session_state:
+    st.session_state.mostrar_resultado_demo = False
+
 # --- HERRAMIENTA DE TRABAJO ---
 st.markdown("### 🛠 Herramienta de Secuenciación")
 
+# Botón interactivo de simulación rápida
+if st.button("🚀 Cargar ejemplo de prueba (Demo Rápida)"):
+    st.session_state.molde_val = ejemplo_molde
+    st.session_state.archivo_val = ejemplo_archivo
+    st.session_state.mostrar_resultado_demo = True
+
+# 1. Entrada de texto del Molde Guía
 molde = st.text_area(
     "1. Pega aquí el Molde Guía (Orden topológico deseado):", 
+    value=st.session_state.molde_val,
     height=150, 
     placeholder="..\\database\\migrations\\V1__init_tables.sql\n..\\database\\migrations\\V2__add_foreign_keys.sql"
 )
 
-archivo_subido = st.file_uploader("2. Selecciona tu archivo Manifiesto desordenado (.txt)", type=["txt"])
+# 2. Entrada de archivo (Subida real o cuadro de texto simulado)
+contenido_archivo = ""
+if st.session_state.mostrar_resultado_demo:
+    # Si se activa el demo, mostramos un cuadro con los datos desordenados cargados automáticamente
+    st.info("💡 Modo Demo activado: Se cargó un manifiesto de producción desordenado simulado (incluye un script de reversión '_rev.sql' que será ignorado automáticamente).")
+    archivo_texto_demo = st.text_area("2. Contenido del Manifiesto original desordenado:", value=st.session_state.archivo_val, height=130)
+    contenido_archivo = archivo_texto_demo
+else:
+    archivo_subido = st.file_uploader("2. Selecciona tu archivo Manifiesto desordenado (.txt)", type=["txt"])
+    if archivo_subido:
+        contenido_archivo = archivo_subido.read().decode("utf-8")
+
+# Botón para limpiar la simulación y volver al estado vacío
+if st.session_state.mostrar_resultado_demo:
+    if st.button("❌ Limpiar demostración"):
+        st.session_state.molde_val = ""
+        st.session_state.archivo_val = ""
+        st.session_state.mostrar_resultado_demo = False
+        st.rerun()
 
 # --- LÓGICA DE PROCESAMIENTO ---
-if archivo_subido and molde:
+if contenido_archivo and molde:
     guias_originales = [linea.strip() for linea in molde.split('\n') if linea.strip()]
     guias_solo_nombres = [linea.split('\\')[-1].split('/')[-1].lower() for linea in guias_originales]
     
-    lineas_originales = archivo_subido.read().decode("utf-8").splitlines()
+    lineas_originales = [linea.strip() for linea in contenido_archivo.split('\n') if linea.strip()]
     
     lineas_filtradas = []
     for linea in lineas_originales:
-        linea_limpia = linea.strip()
-        if not linea_limpia: continue
+        if not linea: continue
         
-        nombre_archivo = linea_limpia.split('|')[-1].lower() if '|' in linea_limpia else linea_limpia.split('\\')[-1].split('/')[-1].lower()
+        nombre_archivo = linea.split('|')[-1].lower() if '|' in linea else linea.split('\\')[-1].split('/')[-1].lower()
             
+        # Filtro automático corporativo
         if nombre_archivo.endswith('_rev.sql'): continue
             
         if nombre_archivo in guias_solo_nombres:
-            lineas_filtradas.append((linea_limpia, nombre_archivo))
+            lineas_filtradas.append((linea, nombre_archivo))
             
     lineas_ordenadas = sorted(
         lineas_filtradas, 
@@ -131,7 +179,7 @@ if archivo_subido and molde:
         st.markdown("---")
         st.success("✓ **Dependencias resueltas.** Secuencia lista para un despliegue seguro.")
         
-        st.write("Vista previa:")
+        st.write("Vista previa del resultado ordenado por Manifest:")
         st.code(resultado_final, language="text")
         
         st.download_button(
