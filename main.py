@@ -8,6 +8,9 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# INYECCIÓN DE LA ETIQUETA META DE GOOGLE (Oculta en el head de la web)
+st.html(f'<meta name="google-site-verification" content="KzHB3sz8GprCF3Zd-eR38c94JzDGFBh_MedxFRlmirw" />')
+
 # 2. DISEÑO DE INTERFAZ Y ESTILOS (CSS)
 st.markdown("""
     <style>
@@ -104,7 +107,6 @@ ejemplo_archivo = (
     "..\\all_scripts\\02_indexes.sql"
 )
 
-# Inicializar estados en el almacenamiento de sesión de Streamlit si no existen
 if "molde_val" not in st.session_state:
     st.session_state.molde_val = ""
 if "archivo_val" not in st.session_state:
@@ -115,13 +117,11 @@ if "mostrar_resultado_demo" not in st.session_state:
 # --- HERRAMIENTA DE TRABAJO ---
 st.markdown("### 🛠 Herramienta de Secuenciación")
 
-# Botón interactivo de simulación rápida
 if st.button("🚀 Cargar ejemplo de prueba (Demo Rápida)"):
     st.session_state.molde_val = ejemplo_molde
     st.session_state.archivo_val = ejemplo_archivo
     st.session_state.mostrar_resultado_demo = True
 
-# 1. Entrada de texto del Molde Guía
 molde = st.text_area(
     "1. Pega aquí el Molde Guía (Orden topológico deseado):", 
     value=st.session_state.molde_val,
@@ -129,10 +129,8 @@ molde = st.text_area(
     placeholder="..\\database\\migrations\\V1__init_tables.sql\n..\\database\\migrations\\V2__add_foreign_keys.sql"
 )
 
-# 2. Entrada de archivo (Subida real o cuadro de texto simulado)
 contenido_archivo = ""
 if st.session_state.mostrar_resultado_demo:
-    # Si se activa el demo, mostramos un cuadro con los datos desordenados cargados automáticamente
     st.info("💡 Modo Demo activado: Se cargó un manifiesto de producción desordenado simulado (incluye un script de reversión '_rev.sql' que será ignorado automáticamente).")
     archivo_texto_demo = st.text_area("2. Contenido del Manifiesto original desordenado:", value=st.session_state.archivo_val, height=130)
     contenido_archivo = archivo_texto_demo
@@ -141,7 +139,6 @@ else:
     if archivo_subido:
         contenido_archivo = archivo_subido.read().decode("utf-8")
 
-# Botón para limpiar la simulación y volver al estado vacío
 if st.session_state.mostrar_resultado_demo:
     if st.button("❌ Limpiar demostración"):
         st.session_state.molde_val = ""
@@ -162,7 +159,6 @@ if contenido_archivo and molde:
         
         nombre_archivo = linea.split('|')[-1].lower() if '|' in linea else linea.split('\\')[-1].split('/')[-1].lower()
             
-        # Filtro automático corporativo
         if nombre_archivo.endswith('_rev.sql'): continue
             
         if nombre_archivo in guias_solo_nombres:
@@ -178,7 +174,6 @@ if contenido_archivo and molde:
     if resultado_final:
         st.markdown("---")
         st.success("✓ **Dependencias resueltas.** Secuencia lista para un despliegue seguro.")
-        
         st.write("Vista previa del resultado ordenado por Manifest:")
         st.code(resultado_final, language="text")
         
