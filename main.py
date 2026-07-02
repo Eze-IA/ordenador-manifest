@@ -1,21 +1,17 @@
 import streamlit as st
 
-# 1. CONFIGURACIÓN DE PÁGINA (Pestaña del navegador)
+# 1. CONFIGURACIÓN DE PÁGINA
 st.set_page_config(
     page_title="Manifest: Intelligent File Dependency Resolver", 
     page_icon="📝",
     layout="centered"
 )
 
-# 2. INYECCIÓN DE ESTILOS CSS AVANZADOS (CORREGIDO)
+# 2. INYECCIÓN DE ESTILOS CSS (SIN IMÁGENES PESADAS)
 st.markdown("""
     <style>
-    /* Ocultar elementos por defecto de Streamlit */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
+    #MainMenu, footer, header {visibility: hidden;}
     
-    /* Contenedor Principal estilo Tarjeta Enterprise */
     .enterprise-card {
         background-color: var(--background-secondary);
         padding: 2.5rem;
@@ -25,18 +21,17 @@ st.markdown("""
         margin-bottom: 2rem;
     }
     
-    /* Maquetado de Cabecera con Logo Flotante */
     .brand-container {
         display: flex;
         align-items: center;
-        gap: 25px;
+        gap: 20px;
         margin-bottom: 20px;
     }
     
-    .brand-logo {
-        width: 110px;
-        height: auto;
-        border-radius: 12px;
+    .brand-emoji {
+        font-size: 3.5rem;
+        margin: 0;
+        line-height: 1;
     }
     
     .brand-text-group {
@@ -69,12 +64,10 @@ st.markdown("""
     .tagline {
         font-size: 1.05rem;
         line-height: 1.6;
-        color: var(--text-color);
         opacity: 0.85;
         margin-bottom: 2rem;
     }
     
-    /* Grilla Corporativa SaaS */
     .tech-header {
         font-size: 0.8rem;
         font-weight: 700;
@@ -103,35 +96,18 @@ st.markdown("""
         gap: 8px;
     }
     
-    .tech-icon {
-        color: #10b981;
-    }
-    
-    /* Inputs */
-    div[data-testid="stForm"] {
-        border: none !important;
-        padding: 0 !important;
-    }
-    
-    label p {
-        font-weight: 700 !important;
-        font-size: 0.95rem !important;
-    }
-    
-    .stTextArea textarea {
-        font-family: 'Consolas', 'Courier New', monospace !important;
-        font-size: 0.85rem !important;
-        border-radius: 8px !important;
-    }
+    .tech-icon { color: #10b981; }
+    label p { font-weight: 700 !important; font-size: 0.95rem !important; }
+    .stTextArea textarea { font-family: 'Consolas', 'Courier New', monospace !important; font-size: 0.85rem !important; border-radius: 8px !important; }
     </style>
 """, unsafe_allow_html=True)
 
-# 3. INTERFAZ VISUAL (REESTRUCTURADA CON LOGO ENTERPRISE)
+# 3. INTERFAZ VISUAL COHESIVA
 st.markdown('<div class="enterprise-card">', unsafe_allow_html=True)
 
 st.markdown("""
 <div class="brand-container">
-    <img class="brand-logo" src="https://i.postimg.co/Rh0g3Nfc/manifest-logo.png" alt="Manifest Logo">
+    <p class="brand-emoji">📝</p>
     <div class="brand-text-group">
         <h1 class="main-title">Manifest</h1>
         <div class="subtitle">Intelligent File Dependency Resolver</div>
