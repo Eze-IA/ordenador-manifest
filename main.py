@@ -1,10 +1,11 @@
 import streamlit as st
 
-# 1. CONFIGURACIÓN DE PÁGINA
+# 1. CONFIGURACIÓN DE PÁGINA (Limpia y sin barra lateral)
 st.set_page_config(
     page_title="Manifest: Intelligent File Sorter", 
     page_icon="📝",
-    layout="centered"
+    layout="centered",
+    initial_sidebar_state="collapsed"
 )
 
 # 2. DISEÑO DE INTERFAZ Y ESTILOS (CSS)
@@ -47,39 +48,8 @@ st.markdown("""
         margin-bottom: 1rem;
         font-size: 0.9rem;
     }
-
-    .tech-badge {
-        display: inline-block;
-        padding: 4px 12px;
-        background: #e2e8f0;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: #475569;
-        margin-right: 5px;
-        margin-bottom: 5px;
-    }
     </style>
 """, unsafe_allow_html=True)
-
-# --- BARRA LATERAL (DOCUMENTACIÓN Y VALOR) ---
-with st.sidebar:
-    st.markdown("## 🧠 Acerca de Manifest")
-    st.write("""
-    **Manifest** es una solución ligera y potente diseñada para eliminar el riesgo de errores en despliegues.
-    
-    A partir de una lista guía, reorganiza automáticamente colecciones de scripts, eliminando el trabajo manual propenso a fallos.
-    """)
-    
-    st.markdown("### 🔒 Privacidad Corporativa")
-    st.info("Procesamiento 100% local. Los archivos nunca salen de tu navegador, cumpliendo con los estándares de seguridad bancarios.")
-    
-    st.markdown("### 🚀 Ideal para:")
-    st.markdown("""
-    - **Databases:** Oracle, SQL Server, PostgreSQL, MySQL.
-    - **Frameworks:** Flyway, Liquibase.
-    - **DevOps:** Kubernetes YAML, Terraform, Bash.
-    """)
 
 # --- CUERPO PRINCIPAL (DISEÑO SaaS) ---
 st.markdown('<div class="enterprise-card">', unsafe_allow_html=True)
@@ -88,16 +58,37 @@ st.markdown('<p class="slogan">The smart way to organize deployment files.</p>',
 
 st.write("**Organiza automáticamente archivos de despliegue y manifests de bases de datos en segundos.**")
 
-# Características destacadas (Grid visual)
+# Características destacadas (Grid visual corto)
 col1, col2 = st.columns(2)
 with col1:
     st.markdown('<div class="feature-box">🧠 <b>Ordenamiento inteligente</b> basado en guías de referencia.</div>', unsafe_allow_html=True)
     st.markdown('<div class="feature-box">⚙️ <b>Filtros configurables</b> para scripts de reversión (*_rev).</div>', unsafe_allow_html=True)
 with col2:
     st.markdown('<div class="feature-box">📂 <b>Extracción automática</b> ignorando rutas complejas.</div>', unsafe_allow_html=True)
-    st.markdown('<div class="feature-box">🔒 <b>Privacidad Total:</b> Ejecución 100% local.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="feature-box">🔒 <b>Privacidad Total:</b> Ejecución 100% local en tu navegador.</div>', unsafe_allow_html=True)
 
 st.markdown('</div>', unsafe_allow_html=True)
+
+# --- BOTÓN DESPLEGABLE NATIVO (DOCUMENTACIÓN COMPLETA) ---
+# Se presenta cerrado por defecto para no robar espacio de trabajo
+with st.expander("📖 Conoce más sobre Manifest (Problema que resuelve e Impacto DevOps)"):
+    st.markdown("""
+    ### 💻 ¿Para quién es?
+    **Manifest** es una solución ligera y potente diseñada para desarrolladores, DBAs y equipos DevOps que necesitan preparar despliegues de forma rápida, segura y sin errores.
+    
+    ### ⚠️ ¿Qué problema resuelve?
+    Evita tareas repetitivas y catastróficas al preparar despliegues complejos. Olvídate de errores humanos en producción como:
+    - *'La tabla se creó después del índice.'*
+    - *'La foreign key apunta a una tabla que todavía no existe.'*
+    - *'El script falló por ejecutarse en el orden incorrecto.'*
+    
+    ### 🚀 Ideal para secuenciar dependencias en:
+    - **Bases de datos:** Oracle, SQL Server, PostgreSQL, MySQL.
+    - **Automatizadores:** Flyway, Liquibase, scripts SQL personalizados.
+    - **Estructuras:** Kubernetes YAML, Terraform HCL, Bash o PowerShell.
+    """)
+
+st.write("---")
 
 # --- HERRAMIENTA DE TRABAJO ---
 st.markdown("### 🛠 Herramienta de Secuenciación")
@@ -149,3 +140,5 @@ if archivo_subido and molde:
             file_name="manifest_ordenado.txt",
             mime="text/plain"
         )
+    else:
+        st.error("No se encontraron coincidencias entre el archivo de entrada y el molde de dependencias.")
