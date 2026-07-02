@@ -1,6 +1,7 @@
 import streamlit as st
+import streamlit.components.v1 as components
 
-# 1. CONFIGURACIÓN DE PÁGINA
+# 1. CONFIGURACIÓN DE PÁGINA (Estilo SaaS Centralizado)
 st.set_page_config(
     page_title="Manifest: Intelligent File Sorter", 
     page_icon="📝",
@@ -8,10 +9,21 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# INYECCIÓN DE LA ETIQUETA META DE GOOGLE (Oculta en el head de la web)
-st.html(f'<meta name="google-site-verification" content="KzHB3sz8GprCF3Zd-eR38c94JzDGFBh_MedxFRlmirw" />')
+# --- INYECCIÓN DE VERIFICACIÓN GOOGLE SEARCH CONSOLE ---
+# Este script salta el aislamiento de Streamlit y pega tu código en el head real
+components.html(
+    """
+    <script>
+        var meta = document.createElement('meta');
+        meta.name = "google-site-verification";
+        meta.content = "KzHB3sz8GprCF3Zd-eR38c94JzDGFBh_MedxFRlmirw";
+        window.parent.document.getElementsByTagName('head')[0].appendChild(meta);
+    </script>
+    """,
+    height=0, width=0
+)
 
-# 2. DISEÑO DE INTERFAZ Y ESTILOS (CSS)
+# 2. DISEÑO DE INTERFAZ Y ESTILOS (CSS ENTERPRISE)
 st.markdown("""
     <style>
     #MainMenu, footer, header {visibility: hidden;}
