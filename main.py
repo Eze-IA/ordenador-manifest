@@ -7,6 +7,24 @@ st.set_page_config(
     layout="centered"
 )
 
+# --- INYECCIÓN DE CSS PARA INVERTIR EL ROJO POR AZUL CORPORATIVO ---
+st.markdown("""
+    <style>
+        /* Forzar color azul en el botón principal */
+        div.stButton > button[kind="primary"] {
+            background-color: #1976D2 !important;
+            color: white !important;
+            border: 1px solid #1976D2 !important;
+        }
+        /* Efecto al pasar el cursor (Hover) */
+        div.stButton > button[kind="primary"]:hover {
+            background-color: #115293 !important;
+            border: 1px solid #115293 !important;
+            color: white !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 # 2. CUERPO PRINCIPAL DE LA APLICACIÓN
 st.title("📄 Manifest")
 st.subheader("Intelligent File Dependency Resolver")
@@ -93,7 +111,6 @@ procesar_ahora = False
 if st.session_state.modo_ejemplo:
     texto_manifiesto = st.session_state.resultado_ejemplo
     procesar_ahora = True
-# AQUÍ CAMBIAMOS EL COLOR A AZUL ESTÉTICO CON TYPE="PRIMARY"
 elif st.button("Ordenar Secuencia 🚀", type="primary", use_container_width=True):
     if not molde_texto.strip():
         st.error("Por favor, ingresa el molde guía con la secuencia lógica.")
@@ -106,7 +123,7 @@ elif st.button("Ordenar Secuencia 🚀", type="primary", use_container_width=Tru
 # --- LÓGICA DE PROCESAMIENTO ---
 if procesar_ahora and molde_texto.strip():
     try:
-        # Processar el molde guía
+        # Procesar el molde guía
         guias_lineas = [linea.strip() for linea in molde_texto.split('\n') if linea.strip()]
         guias_solo_nombres = []
         for linea in guias_lineas:
@@ -144,7 +161,6 @@ if procesar_ahora and molde_texto.strip():
             st.markdown("**Vista previa del resultado ordenado:**")
             st.code(resultado_final, language="text")
             
-            # EL BOTÓN DE DESCARGA QUEDA VERDE (SUCCESS) COMO SIEMPRE PORQUE INDICA ACCIÓN EXITOSA
             st.download_button(
                 label="Descargar Archivo Ordenado 📥",
                 data=resultado_final,
