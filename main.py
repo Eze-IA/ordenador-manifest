@@ -12,9 +12,26 @@ st.title("📄 Manifest")
 st.subheader("Intelligent File Dependency Resolver")
 st.write("Detecta, analiza y ordena lógicamente colecciones de archivos de configuración y scripts antes de tu despliegue.")
 
-# --- SISTEMA DE DATOS DE EJEMPLO AUTOMÁTICO ---
-ejemplo_molde = "V1__init_tables.sql\nV2__add_keys.sql\nV3__insert_defaults.sql"
-ejemplo_manifiesto_simulado = "C:\\deploy\\scripts\\V2__add_keys.sql\nC:\\deploy\\scripts\\V1__init_tables.sql\nC:\\deploy\\scripts\\V3__insert_defaults.sql"
+# --- SISTEMA DE DATOS DE EJEMPLO CORPORATIVO AMPLIADO ---
+ejemplo_molde = (
+    "01_env_setup.sh\n"
+    "V1__create_tables.sql\n"
+    "V2__add_foreign_keys.sql\n"
+    "sp_upsert_customer.sp\n"
+    "sp_process_billing.sp\n"
+    "rpt_monthly_invoice.sqr\n"
+    "V3__insert_seed_data.sql"
+)
+
+ejemplo_manifiesto_simulado = (
+    "C:\\deploy\\src\\sp_process_billing.sp\n"
+    "C:\\deploy\\src\\V2__add_foreign_keys.sql\n"
+    "C:\\deploy\\src\\01_env_setup.sh\n"
+    "C:\\deploy\\src\\rpt_monthly_invoice.sqr\n"
+    "C:\\deploy\\src\\V3__insert_seed_data.sql\n"
+    "C:\\deploy\\src\\sp_upsert_customer.sp\n"
+    "C:\\deploy\\src\\V1__create_tables.sql"
+)
 
 # Inicializar estados de persistencia en la sesión
 if "molde_val" not in st.session_state:
@@ -31,7 +48,7 @@ with col_ej:
         st.session_state.molde_val = ejemplo_molde
         st.session_state.resultado_ejemplo = ejemplo_manifiesto_simulado
         st.session_state.modo_ejemplo = True
-        st.toast("¡Ejemplo cargado y procesado automáticamente!")
+        st.toast("¡Ejemplo empresarial cargado y procesado automáticamente!")
 
 st.divider()
 
@@ -44,7 +61,7 @@ with col1:
         label="Ingresa el orden correcto de los archivos de referencia",
         value=st.session_state.molde_val,
         placeholder="V1__init_tables.sql\nV2__add_keys.sql",
-        height=150,
+        height=180,
         label_visibility="collapsed"
     )
 
@@ -53,7 +70,7 @@ with col2:
     
     # Si estamos en modo ejemplo, mostramos visualmente que el archivo ya está precargado
     if st.session_state.modo_ejemplo:
-        st.info("📄 manifest_ejemplo_desordenado.txt")
+        st.info("📄 manifest_ejemplo_corporativo.txt")
         if st.button("❌ Quitar ejemplo", use_container_width=True):
             st.session_state.molde_val = ""
             st.session_state.resultado_ejemplo = ""
@@ -123,7 +140,7 @@ if procesar_ahora and molde_texto.strip():
 
         if resultado_final:
             st.success("✓ ¡Secuencia ordenada con éxito!")
-            st.markdown("**Vista previa del resultado:**")
+            st.markdown("**Vista previa del resultado ordenado:**")
             st.code(resultado_final, language="text")
             
             st.download_button(
@@ -141,22 +158,22 @@ if procesar_ahora and molde_texto.strip():
 
 # --- SECCIÓN DESPLEGABLE DE MÁS INFORMACIÓN ---
 st.write("")
-with st.expander("ℹ️ Más información y Arquitecturas soportadas"):
+with st.expander("ℹ️ Más información y Extensiones soportadas"):
     st.markdown("""
     ### ¿Qué es Manifest?
-    Es una herramienta para desarrolladores y administradores de bases de datos diseñada para secuenciar y ordenar archivos de despliegue de infraestructura basados en dependencias lógicas estrictas.
+    Es una herramienta para desarrolladores, DBAs y DevOps diseñada para secuenciar, estructurar y ordenar colecciones complejas de scripts de despliegue basándose en dependencias jerárquicas estrictas.
     
-    ### Ideal para resolver dependencias en:
-    * **SQL / Migraciones de bases de datos:** Flyway, Liquibase, parches manuales de Oracle, PostgreSQL o SQL Server (evita errores de Foreign Keys faltantes).
-    * **Orquestación de Infraestructura:** Manifiestos de Kubernetes (K8s), plantillas ordenadas de Terraform o configuraciones modulares en entornos Cloud.
-    * **Limpieza de Historiales:** Filtra y remueve automáticamente archivos temporales o de revisión intermedia (como sufijos `_rev.sql`).
+    ### Ideal para entornos empresariales:
+    * **Migraciones SQL Avanzadas (`.sql`, `.sp`):** Ordena tablas, Foreign Keys y Procedimientos Almacenados evitando fallos de compilación cruzada. Compatible con frameworks como Flyway o parches manuales.
+    * **Reportes de Sistemas Centrales (`.sqr`, `.cfg`):** Secuencia archivos legados de reportes estructurados antes de empaquetar compilaciones a producción.
+    * **Scripts de Automatización y Servidores (`.sh`, `.bat`, `.py`):** Configura el orden de ejecución de tareas de infraestructura en pipelines de despliegue.
     """)
 
 # --- ☕ PIE DE PÁGINA: SECCIÓN DE MONETIZACIÓN AL FINAL ---
 st.divider()
 
 st.markdown("##### ☕ ¿Te ahorré tiempo?")
-st.write("Si **Manifest** te ayudó a automatizar tus procesos, puedes apoyar el proyecto invitándome un café:")
+st.write("Si **Manifest** te ayudó a automatizar tus procesos y evitar fallos de despliegue, puedes apoyar el proyecto invitándome un café:")
 
 col_kofi, col_cafecito, _ = st.columns([1.2, 1.5, 2])
 
