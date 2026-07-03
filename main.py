@@ -174,17 +174,26 @@ if procesar_ahora and molde_texto.strip():
     except Exception as e:
         st.error(f"Ocurrió un error al procesar el archivo: {str(e)}")
 
-# --- SECCIÓN DESPLEGABLE DE MÁS INFORMACIÓN ---
+# --- SECCIÓN DESPLEGABLE DE MÁS INFORMACIÓN (EXTENDIDA CON CARACTERÍSTICAS DE CHROME STORE) ---
 st.write("")
-with st.expander("ℹ️ Más información y Extensiones soportadas"):
+with st.expander("ℹ️ Características, Información y Extensiones soportadas"):
     st.markdown("""
     ### ¿Qué es Manifest?
-    Es una herramienta para desarrolladores, DBAs y DevOps diseñada para secuenciar, estructurar y ordenar colecciones complejas de scripts de despliegue basándose en dependencias jerárquicas estrictas.
+    Es una herramienta profesional para desarrolladores, DBAs y DevOps diseñada para automatizar la secuenciación, estructuración y ordenamiento de colecciones de scripts de despliegue basados en dependencias jerárquicas estrictas. El objetivo es eliminar al 100% los fallos humanos al armar los paquetes de entrega a producción.
     
-    ### Ideal para entornos empresariales:
-    * **Migraciones SQL Avanzadas (`.sql`, `.sp`):** Ordena tablas, Foreign Keys y Procedimientos Almacenados evitando fallos de compilación cruzada. Compatible con frameworks como Flyway o parches manuales.
-    * **Reportes de Sistemas Centrales (`.sqr`, `.cfg`):** Secuencia archivos legados de reportes estructurados antes de empaquetar compilaciones a producción.
-    * **Scripts de Automatización y Servidores (`.sh`, `.bat`, `.py`):** Configura el orden de ejecución de tareas de infraestructura en pipelines de despliegue.
+    ### ⚡ Características Principales (Chrome Web Store Edition):
+    * **Algoritmo Agnóstico de Coincidencias:** Identifica y extrae el nombre exacto del archivo final ignorando rutas de directorios locales complejos (`C:\\...`, `/usr/bin/...`), formatos con pipes (`|`) o metadatos intermedios de sistemas heredados.
+    * **Filtrado Inteligente de Revisiones:** Detecta y remueve de forma automatizada archivos temporales, scripts de control o revisiones intermedias que puedan alterar el entorno (ej. exclusión automática de sufijos como `_rev.sql`).
+    * **Preservación de Estructura Original:** Ordena las líneas de tu manifiesto basándose estrictamente en tu molde guía, pero manteniendo intacto el formato de la línea del archivo origen (rutas completas, pipes o parámetros extras).
+    * **Procesamiento de Alta Velocidad Local:** Diseñado con algoritmos eficientes de ordenamiento indexado capaces de procesar miles de líneas de manifiestos corporativos pesados en milisegundos.
+    
+    ### 🎯 Ideal para resolver dependencias en:
+    * **Migraciones SQL Avanzadas (`.sql`, `.sp`, `.tab`):** Secuencia tablas, índices, Foreign Keys y Procedimientos Almacenados evitando molestos fallos de compilación cruzada o dependencias circulares. Compatible con esquemas manuales o frameworks como Flyway y Liquibase.
+    * **Reportes de Sistemas Centrales y ERPs (`.sqr`, `.cfg`, `.rep`):** Ordena de manera lógica archivos legados de reportes estructurados o configuraciones de entornos SAP, Oracle Financials o Sybase antes de empaquetar compilaciones.
+    * **Scripts de Automatización e Infraestructura (`.sh`, `.bat`, `.py`):** Configura el orden preciso de ejecución de tareas de infraestructura en tus pipelines de integración continua (CI/CD).
+    
+    ### 🔒 Privacidad Enterprise Garantizada:
+    Tanto en la Extensión de Chrome como en esta versión Web, **el procesamiento se ejecuta al 100% de forma local en tu navegador**. Tus datos, rutas de servidores y nombres de scripts corporativos confidenciales jamás se envían a ningún servidor externo.
     """)
 
 # --- ☕ PIE DE PÁGINA: SECCIÓN DE MONETIZACIÓN AL FINAL ---
