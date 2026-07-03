@@ -93,6 +93,7 @@ procesar_ahora = False
 if st.session_state.modo_ejemplo:
     texto_manifiesto = st.session_state.resultado_ejemplo
     procesar_ahora = True
+# AQUÍ CAMBIAMOS EL COLOR A AZUL ESTÉTICO CON TYPE="PRIMARY"
 elif st.button("Ordenar Secuencia 🚀", type="primary", use_container_width=True):
     if not molde_texto.strip():
         st.error("Por favor, ingresa el molde guía con la secuencia lógica.")
@@ -105,7 +106,7 @@ elif st.button("Ordenar Secuencia 🚀", type="primary", use_container_width=Tru
 # --- LÓGICA DE PROCESAMIENTO ---
 if procesar_ahora and molde_texto.strip():
     try:
-        # Procesar el molde guía
+        # Processar el molde guía
         guias_lineas = [linea.strip() for linea in molde_texto.split('\n') if linea.strip()]
         guias_solo_nombres = []
         for linea in guias_lineas:
@@ -114,7 +115,7 @@ if procesar_ahora and molde_texto.strip():
 
         # Procesar las líneas del manifiesto
         lineas_originales = [linea.strip() for linea in texto_manifiesto.splitlines() if linea.strip()]
-        lineas_filtradas = []
+        lineas_filtered = []
 
         for linea in lineas_originales:
             nombre_archivo = ""
@@ -127,22 +128,23 @@ if procesar_ahora and molde_texto.strip():
                 continue
 
             if nombre_archivo in guias_solo_nombres:
-                lineas_filtradas.append({
+                lineas_filtered.append({
                     "texto_original": linea,
                     "nombre_limpio": nombre_archivo
                 })
 
         # Ordenar estrictamente por la posición en el molde guía
-        lineas_filtradas.sort(key=lambda item: guias_solo_nombres.index(item["nombre_limpio"]))
+        lineas_filtered.sort(key=lambda item: guias_solo_nombres.index(item["nombre_limpio"]))
 
         # Unificar resultado
-        resultado_final = "\n".join([item["texto_original"] for item in lineas_filtradas])
+        resultado_final = "\n".join([item["texto_original"] for item in lineas_filtered])
 
         if resultado_final:
             st.success("✓ ¡Secuencia ordenada con éxito!")
             st.markdown("**Vista previa del resultado ordenado:**")
             st.code(resultado_final, language="text")
             
+            # EL BOTÓN DE DESCARGA QUEDA VERDE (SUCCESS) COMO SIEMPRE PORQUE INDICA ACCIÓN EXITOSA
             st.download_button(
                 label="Descargar Archivo Ordenado 📥",
                 data=resultado_final,
