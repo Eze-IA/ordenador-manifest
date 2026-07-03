@@ -12,19 +12,26 @@ st.title("📄 Manifest")
 st.subheader("Intelligent File Dependency Resolver")
 st.write("Detecta, analiza y ordena lógicamente colecciones de archivos de configuración y scripts antes de tu despliegue.")
 
-# --- SISTEMA DE DATOS DE EJEMPLO ---
+# --- SISTEMA DE DATOS DE EJEMPLO AUTOMÁTICO ---
 ejemplo_molde = "V1__init_tables.sql\nV2__add_keys.sql\nV3__insert_defaults.sql"
+ejemplo_manifiesto_simulado = "C:\\deploy\\scripts\\V2__add_keys.sql\nC:\\deploy\\scripts\\V1__init_tables.sql\nC:\\deploy\\scripts\\V3__insert_defaults.sql"
 
-# Inicializar estados de persistencia si no existen
+# Inicializar estados de persistencia en la sesión
 if "molde_val" not in st.session_state:
     st.session_state.molde_val = ""
+if "resultado_ejemplo" not in st.session_state:
+    st.session_state.resultado_ejemplo = ""
+if "modo_ejemplo" not in st.session_state:
+    st.session_state.modo_ejemplo = False
 
-# Fila de botones de soporte superior
+# Fila superior con el botón de ejemplo automático
 col_ej, _ = st.columns([1, 3])
 with col_ej:
     if st.button("💡 Cargar Ejemplo", use_container_width=True):
         st.session_state.molde_val = ejemplo_molde
-        st.toast("Ejemplo cargado. ¡Ahora sube un archivo con las mismas líneas desordenadas!")
+        st.session_state.resultado_ejemplo = ejemplo_manifiesto_simulado
+        st.session_state.modo_ejemplo = True
+        st.toast("¡Ejemplo cargado y procesado automáticamente!")
 
 st.divider()
 
@@ -43,77 +50,94 @@ with col1:
 
 with col2:
     st.markdown("**2. Manifiesto desordenado (.txt):**")
-    archivo_subido = st.file_uploader(
-        label="Sube tu archivo de manifiesto desordenado",
-        type=["txt"],
-        label_visibility="collapsed"
-    )
-    if st.session_state.molde_val and archivo_subido is None:
-        st.info("💡 Para probar el ejemplo, crea un archivo `.txt` con las líneas desordenadas y subirlo acá.")
+    
+    # Si estamos en modo ejemplo, mostramos visualmente que el archivo ya está precargado
+    if st.session_state.modo_ejemplo:
+        st.info("📄 manifest_ejemplo_desordenado.txt")
+        if st.button("❌ Quitar ejemplo", use_container_width=True):
+            st.session_state.molde_val = ""
+            st.session_state.resultado_ejemplo = ""
+            st.session_state.modo_ejemplo = False
+            st.rerun()
+    else:
+        archivo_subido = st.file_uploader(
+            label="Sube tu archivo de manifiesto desordenado",
+            type=["txt"],
+            label_visibility="collapsed"
+        )
 
 st.write("") 
 
-# Botón para procesar la secuencia
-if st.button("Ordenar Secuencia 🚀", type="primary", use_container_width=True):
+# Variable para acumular el texto a procesar
+texto_manifiesto = ""
+procesar_ahora = False
+
+# Determinar de dónde viene la información
+if st.session_state.modo_ejemplo:
+    texto_manifiesto = st.session_state.resultado_ejemplo
+    procesar_ahora = True
+elif st.button("Ordenar Secuencia 🚀", type="primary", use_container_width=True):
     if not molde_texto.strip():
         st.error("Por favor, ingresa el molde guía con la secuencia lógica.")
     elif archivo_subido is None:
         st.error("Por favor, selecciona y sube un archivo manifiesto (.txt).")
     else:
-        try:
-            # Procesar el molde guía
-            guias_lineas = [linea.strip() for linea in molde_texto.split('\n') if linea.strip()]
-            guias_solo_nombres = []
-            for linea in guias_lineas:
-                nombre = linea.replace('\\', '/').split('/')[-1].lower()
-                guias_solo_nombres.append(nombre)
+        texto_manifiesto = archivo_subido.read().decode("utf-8")
+        procesar_ahora = True
 
-            # Leer el archivo manifiesto subido
-            contenido = archivo_subido.read().decode("utf-8")
-            lineas_originales = [linea.strip() for linea in contenido.splitlines() if linea.strip()]
+# --- LÓGICA DE PROCESAMIENTO ---
+if procesar_ahora and molde_texto.strip():
+    try:
+        # Procesar el molde guía
+        guias_lineas = [linea.strip() for linea in molde_texto.split('\n') if linea.strip()]
+        guias_solo_nombres = []
+        for linea in guias_lineas:
+            nombre = linea.replace('\\', '/').split('/')[-1].lower()
+            guias_solo_nombres.append(nombre)
 
-            lineas_filtradas = []
+        # Procesar las líneas del manifiesto
+        lineas_originales = [linea.strip() for linea in texto_manifiesto.splitlines() if linea.strip()]
+        lineas_filtradas = []
 
-            # Filtrar y preparar las coincidencias
-            for linea in lineas_originales:
-                nombre_archivo = ""
-                if '|' in linea:
-                    nombre_archivo = linea.split('|')[-1].strip().lower()
-                else:
-                    nombre_archivo = linea.replace('\\', '/').split('/')[-1].strip().lower()
-
-                if nombre_archivo.endswith('_rev.sql'):
-                    continue
-
-                if nombre_archivo in guias_solo_nombres:
-                    lineas_filtradas.append({
-                        "texto_original": linea,
-                        "nombre_limpio": nombre_archivo
-                    })
-
-            # Ordenar las líneas basándose estrictamente en el molde guía
-            lineas_filtradas.sort(key=lambda item: guias_solo_nombres.index(item["nombre_limpio"]))
-
-            # Unificar el resultado final
-            resultado_final = "\n".join([item["texto_original"] for item in lineas_filtradas])
-
-            if resultado_final:
-                st.success("✓ ¡Secuencia ordenada con éxito!")
-                st.markdown("**Vista previa del resultado:**")
-                st.code(resultado_final, language="text")
-                
-                st.download_button(
-                    label="Descargar Archivo Ordenado 📥",
-                    data=resultado_final,
-                    file_name="manifest_ordenado.txt",
-                    mime="text/plain",
-                    use_container_width=True
-                )
+        for linea in lineas_originales:
+            nombre_archivo = ""
+            if '|' in linea:
+                nombre_archivo = linea.split('|')[-1].strip().lower()
             else:
-                st.warning("No se encontraron coincidencias exactas entre el archivo de manifiesto y tu molde guía.")
-                
-        except Exception as e:
-            st.error(f"Ocurrió un error al procesar el archivo: {str(e)}")
+                nombre_archivo = linea.replace('\\', '/').split('/')[-1].strip().lower()
+
+            if nombre_archivo.endswith('_rev.sql'):
+                continue
+
+            if nombre_archivo in guias_solo_nombres:
+                lineas_filtradas.append({
+                    "texto_original": linea,
+                    "nombre_limpio": nombre_archivo
+                })
+
+        # Ordenar estrictamente por la posición en el molde guía
+        lineas_filtradas.sort(key=lambda item: guias_solo_nombres.index(item["nombre_limpio"]))
+
+        # Unificar resultado
+        resultado_final = "\n".join([item["texto_original"] for item in lineas_filtradas])
+
+        if resultado_final:
+            st.success("✓ ¡Secuencia ordenada con éxito!")
+            st.markdown("**Vista previa del resultado:**")
+            st.code(resultado_final, language="text")
+            
+            st.download_button(
+                label="Descargar Archivo Ordenado 📥",
+                data=resultado_final,
+                file_name="manifest_ordenado.txt",
+                mime="text/plain",
+                use_container_width=True
+            )
+        else:
+            st.warning("No se encontraron coincidencias exactas entre el archivo de manifiesto y tu molde guía.")
+            
+    except Exception as e:
+        st.error(f"Ocurrió un error al procesar el archivo: {str(e)}")
 
 # --- SECCIÓN DESPLEGABLE DE MÁS INFORMACIÓN ---
 st.write("")
@@ -129,12 +153,11 @@ with st.expander("ℹ️ Más información y Arquitecturas soportadas"):
     """)
 
 # --- ☕ PIE DE PÁGINA: SECCIÓN DE MONETIZACIÓN AL FINAL ---
-st.divider() # Línea sutil de separación
+st.divider()
 
 st.markdown("##### ☕ ¿Te ahorré tiempo?")
 st.write("Si **Manifest** te ayudó a automatizar tus procesos, puedes apoyar el proyecto invitándome un café:")
 
-# Creamos columnas para que los botones queden perfectamente alineados uno al lado del otro
 col_kofi, col_cafecito, _ = st.columns([1.2, 1.5, 2])
 
 with col_kofi:
@@ -154,7 +177,6 @@ with col_cafecito:
     )
 
 st.write("")
-# Créditos y notas de seguridad al final absoluto
 col_sec, col_ver = st.columns([3, 1])
 with col_sec:
     st.caption("🔒 **Seguridad Avanzada:** El procesamiento se ejecuta 100% en tu navegador de forma local. Tus archivos nunca se suben a ningún servidor.")
