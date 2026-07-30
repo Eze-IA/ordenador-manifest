@@ -24,20 +24,27 @@ jobs:
         run: |
           python -c "
           from playwright.sync_api import sync_playwright
+          import time
+
           with sync_playwright() as p:
-              browser = p.chromium.launch()
+              browser = p.chromium.launch(headless=True)
               page = browser.new_page()
-              page.goto('https://ordenador-manifest-v2.streamlit.app/')
-              page.wait_for_timeout(5000)
               
-              # Si encuentra el botón de despertar, le hace clic
-              button = page.query_selector('button:has-text(\"Yes, get this app back up!\")')
-              if button:
-                  print('La app estaba dormida, haciendo clic para despertarla...')
-                  button.click()
-                  page.wait_for_timeout(10000)
+              print('Navegando a la aplicación...')
+              page.goto('https://ordenador-manifest-v2.streamlit.app/', wait_until='networkidle')
+              time.sleep(5) # Esperar a que cargue el JavaScript
+              
+              # Intentar encontrar el botón de despertar por texto o selector
+              wake_button = page.query_selector('button:has-text(\"Yes, get this app back up!\")') or \
+                          page.query_selector('text=Yes, get this app back up!')
+
+              if wake_button:
+                  print('¡La app estaba dormida! Haciendo clic en el botón...')
+                  wake_button.click()
+                  print('Esperando 15 segundos para que despierte...')
+                  time.sleep(15)
               else:
-                  print('La app ya está despierta.')
-              
+                  print('La app ya está despierta o no se encontró el botón.')
+
               browser.close()
           "
