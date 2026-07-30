@@ -27,24 +27,37 @@ jobs:
           import time
 
           with sync_playwright() as p:
+              # Usamos un User-Agent de un navegador real para no ser bloqueados como bot
               browser = p.chromium.launch(headless=True)
-              page = browser.new_page()
+              context = browser.new_context(
+                  user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+              )
+              page = context.new_page()
               
               print('Navegando a la aplicación...')
-              page.goto('https://ordenador-manifest-v2.streamlit.app/', wait_until='networkidle')
-              time.sleep(5) # Esperar a que cargue el JavaScript
+              page.goto('https://ordenador-manifest-v2.streamlit.app/', wait_until='domcontentloaded')
+              time.sleep(8) # Esperamos a que todo cargue
               
-              # Intentar encontrar el botón de despertar por texto o selector
-              wake_button = page.query_selector('button:has-text(\"Yes, get this app back up!\")') or \
-                          page.query_selector('text=Yes, get this app back up!')
+              button_found = False
+              
+              # Buscar en el documento principal y en todos los iframes posibles
+              frames = [page] + page.frames
+              for frame in frames:
+                  try:
+                      # Buscar cualquier botón que contenga texto similar a wake/back up
+                      btn = frame.query_selector('button:has-text(\"Yes, get this app back up!\")') or \
+                            frame.query_selector('button:has-text(\"wake\")')
+                      if btn:
+                          print('¡Botón encontrado! Haciendo clic para despertar...')
+                          btn.click(force=True)
+                          button_found = True
+                          time.sleep(12)
+                          break
+                  except Exception as e:
+                      continue
 
-              if wake_button:
-                  print('¡La app estaba dormida! Haciendo clic en el botón...')
-                  wake_button.click()
-                  print('Esperando 15 segundos para que despierte...')
-                  time.sleep(15)
-              else:
-                  print('La app ya está despierta o no se encontró el botón.')
+              if not button_found:
+                  print('No se encontró el botón de suspensión. La app debería estar despierta.')
 
               browser.close()
           "
