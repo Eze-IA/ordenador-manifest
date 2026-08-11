@@ -1,4 +1,5 @@
 import streamlit as st
+import re
 
 # 1. CONFIGURACIÓN DE LA PÁGINA (Limpia y centrada)
 st.set_page_config(
@@ -120,40 +121,55 @@ elif st.button("Ordenar Secuencia 🚀", type="primary", use_container_width=Tru
         texto_manifiesto = archivo_subido.read().decode("utf-8")
         procesar_ahora = True
 
-# --- LÓGICA DE PROCESAMIENTO ---
+# --- LÓGICA DE PROCESAMIENTO OPTIMIZADA (ROBUSTA Y SIN OMISIONES) ---
 if procesar_ahora and molde_texto.strip():
     try:
-        # Procesar el molde guía
-        guias_lineas = [linea.strip() for linea in molde_texto.split('\n') if linea.strip()]
+        # 1. Normalizar y extraer TODOS los nombres de archivos del molde guía en orden de aparición
+        # Soporta múltiples rutas dentro de un mismo renglón
+        patron_archivo = r'([a-zA-Z0-9_\-]+\.(?:sql|sp|sqr|sqt|sh|py|bat|cfg|tab))'
+        
         guias_solo_nombres = []
-        for linea in guias_lineas:
-            nombre = linea.replace('\\', '/').split('/')[-1].lower()
-            guias_solo_nombres.append(nombre)
+        for match in re.finditer(patron_archivo, molde_texto, re.IGNORECASE):
+            nombre = match.group(1).strip().lower()
+            if nombre not in guias_solo_nombres:
+                guias_solo_nombres.append(nombre)
 
-        # Procesar las líneas del manifiesto
+        # Map de prioridades según índice en el molde
+        prioridad_molde = {nombre: i for i, nombre in enumerate(guias_solo_nombres)}
+
+        # 2. Procesar las líneas del manifiesto desordenado
         lineas_originales = [linea.strip() for linea in texto_manifiesto.splitlines() if linea.strip()]
         lineas_filtered = []
 
         for linea in lineas_originales:
+            # Extraer el nombre del archivo de la línea del manifiesto
             nombre_archivo = ""
             if '|' in linea:
                 nombre_archivo = linea.split('|')[-1].strip().lower()
             else:
-                nombre_archivo = linea.replace('\\', '/').split('/')[-1].strip().lower()
+                match = re.search(patron_archivo, linea, re.IGNORECASE)
+                if match:
+                    nombre_archivo = match.group(1).strip().lower()
+                else:
+                    nombre_archivo = linea.replace('\\', '/').split('/')[-1].strip().lower()
 
+            # Filtrar revisiones intermedias
             if nombre_archivo.endswith('_rev.sql'):
                 continue
 
-            if nombre_archivo in guias_solo_nombres:
-                lineas_filtered.append({
-                    "texto_original": linea,
-                    "nombre_limpio": nombre_archivo
-                })
+            # Obtener posición de orden (si no está en el molde, se envía al final)
+            posicion = prioridad_molde.get(nombre_archivo, 999999)
 
-        # Ordenar estrictamente por la posición en el molde guía
-        lineas_filtered.sort(key=lambda item: guias_solo_nombres.index(item["nombre_limpio"]))
+            lineas_filtered.append({
+                "texto_original": linea,
+                "nombre_limpio": nombre_archivo,
+                "posicion": posicion
+            })
 
-        # Unificar resultado
+        # 3. Ordenar manteniendo preservada la posición exacta del molde
+        lineas_filtered.sort(key=lambda item: item["posicion"])
+
+        # 4. Unificar resultado garantizando 1 registro por línea
         resultado_final = "\n".join([item["texto_original"] for item in lineas_filtered])
 
         if resultado_final:
@@ -225,4 +241,4 @@ col_sec, col_ver = st.columns([3, 1])
 with col_sec:
     st.caption("🔒 **Seguridad Avanzada:** El procesamiento se ejecuta 100% en tu navegador de forma local. Tus archivos nunca se suben a ningún servidor.")
 with col_ver:
-    st.caption("Manifest Web — v1.0.3")
+    st.caption("Manifest Web — v1.0.4")
