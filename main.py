@@ -121,20 +121,25 @@ elif st.button("Ordenar Secuencia 🚀", type="primary", use_container_width=Tru
         texto_manifiesto = archivo_subido.read().decode("utf-8")
         procesar_ahora = True
 
-# --- LÓGICA DE PROCESAMIENTO OPTIMIZADA (ROBUSTA Y SIN OMISIONES) ---
+# --- LÓGICA DE PROCESAMIENTO OPTIMIZADA Y ESTRICTA ---
 if procesar_ahora and molde_texto.strip():
     try:
-        # 1. Normalizar y extraer TODOS los nombres de archivos del molde guía en orden de aparición
-        # Soporta múltiples rutas dentro de un mismo renglón
-        patron_archivo = r'([a-zA-Z0-9_\-]+\.(?:sql|sp|sqr|sqt|sh|py|bat|cfg|tab))'
+        # Patrón de extracción de nombres de archivo
+        patron_archivo = r'(?:^|[\\/|])([a-zA-Z0-9_\-]+\.(?:sql|sp|sqr|sqt|sh|py|bat|cfg|tab))(?:$|\s)'
         
+        # 1. Extraer nombres del molde guía manteniendo orden de prioridad
         guias_solo_nombres = []
-        for match in re.finditer(patron_archivo, molde_texto, re.IGNORECASE):
-            nombre = match.group(1).strip().lower()
-            if nombre not in guias_solo_nombres:
-                guias_solo_nombres.append(nombre)
+        for linea in molde_texto.splitlines():
+            linea_limpia = linea.strip()
+            if not linea_limpia:
+                continue
+            matches = re.findall(patron_archivo, linea_limpia, re.IGNORECASE)
+            for m in matches:
+                nombre = m.lower()
+                if nombre not in guias_solo_nombres:
+                    guias_solo_nombres.append(nombre)
 
-        # Map de prioridades según índice en el molde
+        # Mapa de prioridades según el molde
         prioridad_molde = {nombre: i for i, nombre in enumerate(guias_solo_nombres)}
 
         # 2. Procesar las líneas del manifiesto desordenado
@@ -142,34 +147,43 @@ if procesar_ahora and molde_texto.strip():
         lineas_filtered = []
 
         for linea in lineas_originales:
-            # Extraer el nombre del archivo de la línea del manifiesto
+            # Descartar código o sentencias SQL sueltas que no sean nombres de archivo
+            linea_upper = linea.upper().strip()
+            if any(linea_upper.startswith(kw) for kw in ["SELECT ", "INSERT ", "UPDATE ", "DELETE ", "CREATE ", "ALTER ", "DROP ", "GRANT "]):
+                continue
+
             nombre_archivo = ""
+            # Si el manifiesto usa formato con pipes: TIPO|modulo|ruta|archivo.ext
             if '|' in linea:
-                nombre_archivo = linea.split('|')[-1].strip().lower()
+                partes = linea.split('|')
+                posible_nombre = partes[-1].strip().lower()
+                if re.search(r'^[a-zA-Z0-9_\-]+\.(?:sql|sp|sqr|sqt|sh|py|bat|cfg|tab)$', posible_nombre, re.IGNORECASE):
+                    nombre_archivo = posible_nombre
             else:
                 match = re.search(patron_archivo, linea, re.IGNORECASE)
                 if match:
-                    nombre_archivo = match.group(1).strip().lower()
-                else:
-                    nombre_archivo = linea.replace('\\', '/').split('/')[-1].strip().lower()
+                    nombre_archivo = match.group(1).lower()
 
-            # Filtrar revisiones intermedias
+            # Ignorar si no se detectó un archivo válido
+            if not nombre_archivo:
+                continue
+
+            # Filtrar archivos de revisión intermedia
             if nombre_archivo.endswith('_rev.sql'):
                 continue
 
-            # Obtener posición de orden (si no está en el molde, se envía al final)
-            posicion = prioridad_molde.get(nombre_archivo, 999999)
+            # SOLO incluir en la salida si el archivo está en el molde guía
+            if nombre_archivo in prioridad_molde:
+                lineas_filtered.append({
+                    "texto_original": linea,
+                    "nombre_limpio": nombre_archivo,
+                    "posicion": prioridad_molde[nombre_archivo]
+                })
 
-            lineas_filtered.append({
-                "texto_original": linea,
-                "nombre_limpio": nombre_archivo,
-                "posicion": posicion
-            })
-
-        # 3. Ordenar manteniendo preservada la posición exacta del molde
+        # 3. Ordenar preservando la posición exacta del molde
         lineas_filtered.sort(key=lambda item: item["posicion"])
 
-        # 4. Unificar resultado garantizando 1 registro por línea
+        # 4. Unificar resultado garantizando salto de línea (\n)
         resultado_final = "\n".join([item["texto_original"] for item in lineas_filtered])
 
         if resultado_final:
@@ -185,7 +199,7 @@ if procesar_ahora and molde_texto.strip():
                 use_container_width=True
             )
         else:
-            st.warning("No se encontraron coincidencias exactas entre el archivo de manifiesto y tu molde guía.")
+            st.warning("No se encontraron coincidencias válidas entre el manifiesto y el molde guía.")
             
     except Exception as e:
         st.error(f"Ocurrió un error al procesar el archivo: {str(e)}")
@@ -195,7 +209,7 @@ st.write("")
 with st.expander("ℹ️ Características, Información y Extensiones soportadas"):
     st.markdown("""
     ### ¿Qué es Manifest?
-    Es una herramienta profesional para desarrolladores, DBAs y DevOps diseñada para automatizar la secuenciación, estructuración y ordenamiento de colecciones de scripts de despliegue basados en dependencias jerárquicas estrictas. El objetivo es eliminar al 100% los fallos humanos al armar los paquetes de entrega a producción.
+    Es una herramienta profesional para desarrolladores, DBAs y DevOps diseñada para automatizar la secuenciación, estructuración y ordenamiento de colecciones de scripts de despliegue basados en dependencias jerárquicas strictly. El objetivo es eliminar al 100% los fallos humanos al armar los paquetes de entrega a producción.
     
     ### ⚡ Características Principales (Chrome Web Store Edition):
     * **Algoritmo Agnóstico de Coincidencias:** Identifica y extrae el nombre exacto del archivo final ignorando rutas de directorios locales complejos (`C:\\...`, `/usr/bin/...`), formatos con pipes (`|`) o metadatos intermedios de sistemas heredados.
@@ -241,4 +255,4 @@ col_sec, col_ver = st.columns([3, 1])
 with col_sec:
     st.caption("🔒 **Seguridad Avanzada:** El procesamiento se ejecuta 100% en tu navegador de forma local. Tus archivos nunca se suben a ningún servidor.")
 with col_ver:
-    st.caption("Manifest Web — v1.0.4")
+    st.caption("Manifest Web — v1.0.5")
