@@ -124,8 +124,8 @@ elif st.button("Ordenar Secuencia 🚀", type="primary", use_container_width=Tru
 # --- LÓGICA DE PROCESAMIENTO OPTIMIZADA Y ESTRICTA ---
 if procesar_ahora and molde_texto.strip():
     try:
-        # Patrón de extracción de nombres de archivo
-        patron_archivo = r'(?:^|[\\/|])([a-zA-Z0-9_\-]+\.(?:sql|sp|sqr|sqt|sh|py|bat|cfg|tab))(?:$|\s)'
+        # Patrón de extracción de nombres de archivo (Se añade 'fmt')
+        patron_archivo = r'(?:^|[\\/|])([a-zA-Z0-9_\-]+\.(?:sql|sp|sqr|sqt|sh|py|bat|cfg|tab|fmt))(?:$|\s)'
         
         # 1. Extraer nombres del molde guía manteniendo orden de prioridad
         guias_solo_nombres = []
@@ -157,7 +157,7 @@ if procesar_ahora and molde_texto.strip():
             if '|' in linea:
                 partes = linea.split('|')
                 posible_nombre = partes[-1].strip().lower()
-                if re.search(r'^[a-zA-Z0-9_\-]+\.(?:sql|sp|sqr|sqt|sh|py|bat|cfg|tab)$', posible_nombre, re.IGNORECASE):
+                if re.search(r'^[a-zA-Z0-9_\-]+\.(?:sql|sp|sqr|sqt|sh|py|bat|cfg|tab|fmt)$', posible_nombre, re.IGNORECASE):
                     nombre_archivo = posible_nombre
             else:
                 match = re.search(patron_archivo, linea, re.IGNORECASE)
@@ -218,7 +218,7 @@ with st.expander("ℹ️ Características, Información y Extensiones soportadas
     * **Procesamiento de Alta Velocidad Local:** Diseñado con algoritmos eficientes de ordenamiento indexado capaces de procesar miles de líneas de manifiestos corporativos pesados en milisegundos.
     
     ### 🎯 Ideal para resolver dependencias en:
-    * **Migraciones SQL Avanzadas (`.sql`, `.sp`, `.tab`):** Secuencia tablas, índices, Foreign Keys y Procedimientos Almacenados evitando molestos fallos de compilación cruzada o dependencias circulares. Compatible con esquemas manuales o frameworks como Flyway y Liquibase.
+    * **Migraciones SQL Avanzadas (`.sql`, `.sp`, `.tab`, `.fmt`):** Secuencia tablas, índices, Foreign Keys, archivos de formato (FMT) y Procedimientos Almacenados evitando molestos fallos de compilación cruzada o dependencias circulares. Compatible con esquemas manuales o frameworks como Flyway y Liquibase.
     * **Reportes de Sistemas Centrales y ERPs (`.sqr`, `.cfg`, `.rep`):** Ordena de manera lógica archivos legados de reportes estructurados o configuraciones de entornos SAP, Oracle Financials o Sybase antes de empaquetar compilaciones.
     * **Scripts de Automatización e Infraestructura (`.sh`, `.bat`, `.py`):** Configura el orden preciso de ejecución de tareas de infraestructura en tus pipelines de integración continua (CI/CD).
     
@@ -255,4 +255,4 @@ col_sec, col_ver = st.columns([3, 1])
 with col_sec:
     st.caption("🔒 **Seguridad Avanzada:** El procesamiento se ejecuta 100% en tu navegador de forma local. Tus archivos nunca se suben a ningún servidor.")
 with col_ver:
-    st.caption("Manifest Web — v1.0.5")
+    st.caption("Manifest Web — v1.0.6")
